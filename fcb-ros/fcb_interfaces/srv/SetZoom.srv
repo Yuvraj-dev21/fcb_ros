@@ -1,0 +1,18 @@
+# Control optical (and, when enabled, digital) zoom.
+#
+# mode:
+#   "ratio"     move to magnification `value` (1.0 .. 30.0 optical; up to 360.0 when digital zoom is on)
+#   "position"  move to raw VISCA position `value` (0 .. 16384 optical, .. 31424 digital)
+#   "tele"      zoom in continuously at `speed` (0 slow .. 7 fast); send "stop" to halt
+#   "wide"      zoom out continuously at `speed`
+#   "stop"      stop a continuous zoom
+#   "digital"   enable (value >= 1) or disable (value < 1) digital zoom
+string mode
+float64 value
+int32 speed 3
+bool wait          # for ratio/position: block until the lens has arrived (up to ~10 s)
+---
+bool success
+string message
+int32 zoom_position    # position read back after the command
+float32 zoom_ratio

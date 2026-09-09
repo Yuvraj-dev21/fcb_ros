@@ -1,0 +1,18 @@
+# Control focus.
+#
+# mode:
+#   "auto"      enable auto focus
+#   "manual"    switch to manual focus (lens holds its position)
+#   "one_push"  trigger a single auto-focus pass (camera stays in manual afterwards)
+#   "position"  manual focus, move to raw VISCA position `position` (4096 far .. 61440 near)
+#   "far"       manual focus, move towards infinity at `speed` (0..7); send "stop" to halt
+#   "near"      manual focus, move towards near end at `speed`
+#   "stop"      stop a continuous focus movement
+string mode
+int32 position
+int32 speed 3
+---
+bool success
+string message
+int32 focus_position
+string focus_mode

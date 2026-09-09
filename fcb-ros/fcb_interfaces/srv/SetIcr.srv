@@ -1,0 +1,17 @@
+# Day / night switching (IR cut filter removal, "ICR" in Sony's manual).
+#
+# mode:
+#   "day"          IR cut filter in place, normal colour image        (CAM_ICR Off)
+#   "night"        filter removed, IR-sensitive monochrome            (CAM_ICR On)
+#   "night_color"  filter removed, colour retained (false colours under IR light)
+#   "auto"         camera switches day/night from scene brightness    (CAM_AutoICR On)
+#   "auto_color"   like auto, but keeps colour in night mode
+#   "manual"       turn automatic switching off, keep the current filter position
+# Aliases accepted: "rgb"/"color"/"colour" -> day, "ir"/"bw"/"mono" -> night, "ir_color" -> night_color
+string mode
+int32 auto_threshold -1     # 0..255: brightness threshold for auto mode, -1 leaves it unchanged
+---
+bool success
+string message
+string icr_mode
+bool auto_icr

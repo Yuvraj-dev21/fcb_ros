@@ -1,0 +1,23 @@
+# Stable device names for the Sony FCB-EV9520L on its USB (Twiga NeoHD) board.
+#
+#   /dev/fcb_video  -> the V4L2 capture node
+#   /dev/fcb_visca  -> the VISCA serial port
+#
+# The driver prefers these symlinks when they exist, which skips the
+# autodetection sweep at startup. Install with:
+#   sudo cp 99-fcb-camera.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+#
+# The vendor/product IDs of the VISCA port are board specific. Run
+# fcb_udev_setup.sh with the camera plugged in to fill them in automatically.
+
+# Video: match on the V4L2 card name (index 0 is the capture node; index 1 is UVC metadata).
+SUBSYSTEM=="video4linux", ATTR{name}=="*NeoHD*", ATTR{index}=="0", SYMLINK+="fcb_video"
+SUBSYSTEM=="video4linux", ATTR{name}=="*FCB*", ATTR{index}=="0", SYMLINK+="fcb_video"
+SUBSYSTEM=="video4linux", ATTR{name}=="*Harrier*", ATTR{index}=="0", SYMLINK+="fcb_video"
+
+# VISCA serial port on the Twiga "USB3 NeoHD" board (Cypress FX3; 04b4:00f9 on USB 3, 04b4:00f8 when it falls back to USB 2; CDC-ACM interface).
+SUBSYSTEM=="tty", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="00f[89]", SYMLINK+="fcb_visca", MODE="0666"
+# Video node of the same board, matched by USB ID as a fallback to the name match above.
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="00f[89]", ATTR{index}=="0", SYMLINK+="fcb_video"
+# Let the driver issue a USB reset to the board when the video stream wedges.
+SUBSYSTEM=="usb", ATTR{idVendor}=="04b4", ATTR{idProduct}=="00f[89]", MODE="0664", GROUP="plugdev"

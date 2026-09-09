@@ -1,0 +1,17 @@
+# Escape hatch: send an arbitrary VISCA packet. Give the bytes between the
+# address header and the 0xFF terminator, either as `payload` or as a hex
+# string ("01 04 07 00" or "01040700"). Header and terminator are added.
+#
+# `inquiry` true waits for the data-carrying completion and returns it in
+# `reply` (bytes between the reply header and 0xFF, e.g. "50 00 00 04 00").
+# `inquiry` false waits for the ACK, and for the completion too if `wait_completion`.
+uint8[] payload
+string hex
+bool inquiry
+bool wait_completion
+float32 timeout_s 1.0
+---
+bool success
+string message
+uint8[] reply
+string reply_hex

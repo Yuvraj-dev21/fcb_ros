@@ -1,0 +1,54 @@
+# Parameters for the Sony FCB-EV9520L driver. Loaded by launch/fcb_camera.launch.py.
+/**:
+  ros__parameters:
+    # ---- video capture -------------------------------------------------------
+    video:
+      device: ""                    # "" = autodetect by card name (see device_hints); or "/dev/video0", "/dev/fcb_video"
+      device_hints: ["NeoHD", "FCB", "Harrier"]   # substrings of the V4L2 card name that identify the camera board
+      width: 1920
+      height: 1080
+      fps: 60.0                     # 59.94 is also understood
+      pixel_format: "YUYV"          # the FCB board delivers packed YUYV 4:2:2
+      buffers: 6                    # V4L2 mmap buffers; more absorbs encoder jitter
+      timestamp_source: "v4l2"      # "v4l2": kernel capture timestamp (recommended) | "node": time of dequeue
+
+    frame_id: "fcb_optical_frame"
+    camera_name: "fcb_ev9520l"
+    camera_info_url: "package://fcb_camera/config/fcb_ev9520l_1080p.yaml"
+    camera_info:
+      scale_with_zoom: true         # multiply fx, fy by the current optical zoom ratio
+
+    # ---- encoding --------------------------------------------------------------
+    encoder:
+      backend: "auto"               # "auto" (Jetson hw encoder via GStreamer if present, else libav) | "libav" | "gstreamer"
+      codec: "hevc"                 # "hevc" (H.265, default) | "h264"
+      name: ""                      # libav encoder (hevc_nvenc, libx265, ...) or GStreamer element; "" = pick automatically
+      bit_rate: 8000000             # bits/s cap. 8 Mbit/s ~ 1 GB per 17 min
+      gop_size: 30                  # keyframe every 0.5 s at 60 fps; a subscriber/bag can start at any keyframe
+      max_b_frames: 0               # 0 = no reordering, lowest latency
+      quality: 23                   # constant-quality target (crf / cq, lower = better, 18..28 sensible); -1 = bitrate only
+      preset: ""                    # "" = superfast (libx265) / veryfast (libx264) / p4 (nvenc)
+      av_options: ""                # extra libav options, "key:value,key:value", e.g. "profile:main,tune:ll"
+      gst_pipeline: ""              # full GStreamer override, must contain appsrc name=fcbsrc and appsink name=fcbsink
+      threads: 0                    # libav software encoder threads, 0 = auto
+      queue_depth: 4                # frames buffered between capture and encoder before dropping
+
+    # ---- VISCA control ---------------------------------------------------------
+    visca:
+      port: ""                      # "" = probe /dev/fcb_visca, /dev/ttyACM*, /dev/ttyUSB*, /dev/ttyTHS*
+      baud: 0                       # 0 = try 9600, 38400, 115200
+      address: 1
+      timeout: 0.5                  # seconds to wait for ACK / inquiry reply
+      required: false               # true = refuse to start without the control link
+      allow_digital_zoom: false     # let set_zoom go past 30x even if digital zoom is not enabled on the camera
+
+    state_rate_hz: 2.0              # ~/state publish + lens poll rate
+
+    # ---- settings applied once at startup (empty = leave camera as is) --------
+    startup:
+      icr_mode: ""                  # day | night | night_color | auto
+      focus_mode: ""                # auto | manual
+      exposure_mode: ""             # full_auto | manual | shutter_priority | iris_priority | bright
+      stabilizer: ""                # on | off
+      digital_zoom: ""              # on | off
+      zoom_ratio: -1.0              # e.g. 1.0 to reset the lens to wide on start

@@ -1,0 +1,27 @@
+# Placeholder calibration for the Sony FCB-EV9520L at 1920x1080, WIDE end (1x).
+#
+# fx/fy are derived from the datasheet horizontal field of view at the wide end
+# (about 63.7 degrees): fx = 960 / tan(31.85 deg) ~= 1545. Distortion is zero.
+# Replace with a real calibration (camera_calibration package) when available.
+# With camera_info.scale_with_zoom enabled the driver multiplies fx and fy by
+# the current optical zoom ratio, which is a fair approximation for this lens.
+image_width: 1920
+image_height: 1080
+camera_name: fcb_ev9520l
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1545.0, 0.0, 960.0, 0.0, 1545.0, 540.0, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.0, 0.0, 0.0, 0.0, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1545.0, 0.0, 960.0, 0.0, 0.0, 1545.0, 540.0, 0.0, 0.0, 0.0, 1.0, 0.0]

@@ -1,0 +1,27 @@
+# Exposure control. Fields set to -1 (or "" for the on/off strings) are left
+# unchanged, so a single field can be adjusted without touching the rest.
+#
+# mode:
+#   ""                  keep current mode
+#   "full_auto"         camera controls shutter, iris and gain
+#   "manual"            shutter, iris and gain are set by hand
+#   "shutter_priority"  shutter fixed, iris and gain automatic
+#   "iris_priority"     iris fixed, shutter and gain automatic
+#   "bright"            single "brightness" control (see `brightness`)
+string mode
+int32 shutter -1            # raw shutter index, 0 .. 21 (see Sony manual table; 1/1 .. 1/10000 s)
+int32 iris -1               # raw iris index, 0 (closed) .. 17 (F1.6)
+int32 gain -1               # raw gain index, 0 (0 dB) .. 15 (45 dB)
+int32 gain_limit -1         # raw gain limit index, 4 .. 15, for the auto modes
+int32 brightness -1         # 0 .. 41, only in "bright" mode
+int32 exposure_compensation -1   # 0 .. 14 (7 = 0 EV); setting this also enables compensation
+string exposure_compensation_enable   # "on" | "off" | ""
+string backlight_compensation         # "on" | "off" | ""
+string slow_shutter_auto              # "on" | "off" | ""
+---
+bool success
+string message
+string exposure_mode
+int32 shutter
+int32 iris
+int32 gain

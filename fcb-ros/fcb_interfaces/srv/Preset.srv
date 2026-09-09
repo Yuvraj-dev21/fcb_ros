@@ -1,0 +1,7 @@
+# Camera memory presets (zoom, focus, exposure and picture settings), slots 0 .. 15.
+# action: "set" stores the current state in `slot`, "recall" restores it, "reset" clears it.
+string action
+uint8 slot
+---
+bool success
+string message

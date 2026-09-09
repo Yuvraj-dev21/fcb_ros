@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>fcb_camera</name>
+  <version>0.1.0</version>
+  <description>
+    ROS 2 driver for the Sony FCB-EV9520L block camera: V4L2 capture, hardware/software
+    H.265/H.264 encoding published as ffmpeg_image_transport packets, CameraInfo, and
+    VISCA control services (zoom, focus, IR cut filter, exposure, white balance, presets).
+  </description>
+  <maintainer email="dev.team@hellosummon.com">Summon dev team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>camera_info_manager</depend>
+  <depend>ffmpeg_image_transport_msgs</depend>
+  <depend>fcb_interfaces</depend>
+  <depend>ffmpeg</depend>
+  <depend>pkg-config</depend>
+
+  <exec_depend>ffmpeg_image_transport</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>rosbag2_py</exec_depend>
+  <exec_depend>python3-serial</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

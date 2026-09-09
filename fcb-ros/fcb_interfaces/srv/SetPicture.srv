@@ -1,0 +1,14 @@
+# Picture and mechanical settings. Empty strings and -1 leave a setting as it is.
+string stabilizer           # "on" | "off" | ""
+string defog                # "on" | "off" | ""
+int32 defog_level -1        # 1 .. 3, used when defog is switched on
+int32 noise_reduction -1    # 0 (off) .. 5
+int32 aperture -1           # sharpness, 0 .. 15
+string flip                 # vertical picture flip: "on" | "off" | ""
+string mirror               # horizontal mirror:     "on" | "off" | ""
+string freeze               # freeze the picture:    "on" | "off" | ""
+string digital_zoom         # "on" | "off" | ""
+string power                # "on" | "off" (standby) | ""
+---
+bool success
+string message

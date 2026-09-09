@@ -1,0 +1,22 @@
+# White balance.
+#
+# mode:
+#   ""                    keep current mode
+#   "auto"                (CAM_WB Auto)
+#   "indoor"              3200 K
+#   "outdoor"             5800 K
+#   "one_push"            hold the last one-push result; set `trigger_one_push` to measure now
+#   "atw"                 auto tracing white balance
+#   "manual"              use `red_gain` / `blue_gain`
+#   "outdoor_auto"
+#   "sodium_auto"
+#   "sodium"
+#   "sodium_outdoor_auto"
+string mode
+bool trigger_one_push
+int32 red_gain -1           # 0 .. 255, manual mode only; -1 leaves it unchanged
+int32 blue_gain -1          # 0 .. 255, manual mode only; -1 leaves it unchanged
+---
+bool success
+string message
+string white_balance_mode
