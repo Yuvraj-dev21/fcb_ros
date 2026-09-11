@@ -1,6 +1,0 @@
-[0.000000] (-) TimerEvent: {}
-[0.000161] (-) JobUnselected: {'identifier': 'fcb_interfaces'}
-[0.000182] (fcb_camera) JobQueued: {'identifier': 'fcb_camera', 'dependencies': OrderedDict([('fcb_interfaces', '/home/akshat/fcb-ros/fcb-ros/install/fcb_interfaces')])}
-[0.000199] (fcb_camera) JobStarted: {'identifier': 'fcb_camera'}
-[0.008550] (fcb_camera) JobEnded: {'identifier': 'fcb_camera', 'rc': 1}
-[0.018926] (-) EventReactorShutdown: {}

@@ -211,21 +211,90 @@ real timing.
 Playback: `ros2 bag play flight1`, then `view.launch.py` decodes
 `/fcb/image/ffmpeg` back to images.
 
-## Jetson Orin notes
+## Jetson Orin: dependencies, build, run
 
-* Install the GStreamer dev packages before building; `encoder.backend: auto`
-  then picks `nvv4l2h265enc`, the only route to the Tegra hardware encoder.
-  The default pipeline is
-  `appsrc (YUY2) → nvvidconv → NV12 (NVMM) → nvv4l2h265enc → h265parse → appsink`
-  with SPS/PPS inserted on every IDR.
-* Stock JetPack ffmpeg has no NVENC, so `backend: libav` there means CPU
-  `libx265`, which will not hold 1080p60 on an Orin Nano. Keep the GStreamer
-  backend.
-* `hevc_cuvid` does not exist on Jetson; for viewing on the Orin set the
-  republisher's decoder parameter to `hevc` or use `nvv4l2decoder` via
-  GStreamer outside ROS.
-* The board's serial port appears as `/dev/ttyACM*` on the Orin as well; if
-  the camera is wired to a Jetson UART instead, `visca.port: /dev/ttyTHS1`.
+Tested design target: Jetson Orin Nano / NX, JetPack 6 (Ubuntu 22.04) with ROS 2 Humble.
+
+### 1. Dependencies
+
+```bash
+# ROS 2 Humble (skip if installed): https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
+sudo apt update
+sudo apt install -y \
+  ros-humble-ros-base ros-humble-camera-info-manager ros-humble-image-transport \
+  ros-humble-ffmpeg-image-transport ros-humble-ffmpeg-image-transport-msgs \
+  ros-humble-ffmpeg-encoder-decoder ros-humble-cv-bridge \
+  ros-humble-rosbag2 ros-humble-rosbag2-storage-mcap ros-humble-rqt-image-view \
+  python3-colcon-common-extensions python3-rosdep python3-serial \
+  libavcodec-dev libavutil-dev libswscale-dev ffmpeg v4l-utils \
+  libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+  gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+# JetPack already provides the NVIDIA GStreamer plugins; confirm the hardware encoder is visible:
+gst-inspect-1.0 nvv4l2h265enc | head -3
+# device access
+sudo usermod -aG video,dialout,plugdev $USER      # log out and in again
+```
+
+If `ros-humble-ffmpeg-image-transport` is not available for arm64 on your
+mirror, clone the three repos into the workspace and build them from source
+(same commands as below; that is what this workspace does):
+
+```bash
+cd ~/fcb-ros
+git clone https://github.com/ros-misc-utilities/ffmpeg_image_transport_msgs.git
+git clone https://github.com/ros-misc-utilities/ffmpeg_encoder_decoder.git
+git clone https://github.com/ros-misc-utilities/ffmpeg_image_transport.git
+```
+
+### 2. Build
+
+```bash
+# copy this workspace to the Orin, e.g. rsync -a --exclude build --exclude install --exclude log ~/fcb-ros nvidia@orin:
+cd ~/fcb-ros
+source /opt/ros/humble/setup.bash
+rosdep install --from-paths fcb-ros --ignore-src -r -y
+colcon build --packages-select ffmpeg_image_transport_msgs ffmpeg_encoder_decoder ffmpeg_image_transport \
+             --cmake-args -DBUILD_TESTING=OFF        # only when built from source
+colcon build --packages-select fcb_interfaces fcb_camera --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
+```
+
+The configure step must **not** print `building without the GStreamer
+backend`; if it does, the GStreamer dev packages are missing and the driver
+would fall back to CPU `libx265`, which cannot hold 1080p60 on an Orin.
+
+### 3. Stable device names (once)
+
+```bash
+ros2 run fcb_camera fcb_udev_setup.sh      # camera plugged in; installs /etc/udev/rules.d/99-fcb-camera.rules
+```
+
+### 4. Run
+
+```bash
+source ~/fcb-ros/install/setup.bash
+ros2 launch fcb_camera fcb_camera.launch.py                 # auto: nvv4l2h265enc via GStreamer, 8 Mbit/s
+ros2 launch fcb_camera fcb_camera.launch.py backend:=gstreamer codec:=h264   # H.264 hardware encoder
+ros2 run fcb_camera fcb_record.sh flight1                    # record
+```
+
+Expected log line: `encoder gstreamer:nvv4l2h265enc ready (hevc;nv12;bgr8;bgr8)`.
+Check with `ros2 topic hz /fcb/image/ffmpeg` (~59.9) and `ros2 topic echo /fcb/state`.
+
+### Jetson specifics
+
+* The GStreamer pipeline used is
+  `appsrc (YUY2) → nvvidconv → NV12 (NVMM) → nvv4l2h265enc → h265parse → appsink`,
+  with SPS/PPS inserted on every IDR; override it with `encoder.gst_pipeline`.
+* Stock JetPack ffmpeg has no NVENC, so `backend: libav` means CPU encoding
+  on the Orin. Keep `auto` or `gstreamer`.
+* Viewing on the Orin: `view.launch.py` tries `hevc_cuvid` first, which does
+  not exist on Jetson, and falls back to the software `hevc` decoder, which
+  is fine for a preview. Viewing on the ground station over the network is
+  preferable: run `view.launch.py` there.
+* If the camera is wired to a Jetson UART instead of the board's USB serial:
+  `visca_port:=/dev/ttyTHS1`.
+* Run `sudo nvpmodel -m 0 && sudo jetson_clocks` for maximum performance.
 
 ## Testing without the camera
 
