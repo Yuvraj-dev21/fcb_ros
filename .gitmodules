@@ -1,0 +1,9 @@
+[submodule "ffmpeg_image_transport_msgs"]
+	path = ffmpeg_image_transport_msgs
+	url = https://github.com/ros-misc-utilities/ffmpeg_image_transport_msgs.git
+[submodule "ffmpeg_encoder_decoder"]
+	path = ffmpeg_encoder_decoder
+	url = https://github.com/ros-misc-utilities/ffmpeg_encoder_decoder.git
+[submodule "ffmpeg_image_transport"]
+	path = ffmpeg_image_transport
+	url = https://github.com/ros-misc-utilities/ffmpeg_image_transport.git

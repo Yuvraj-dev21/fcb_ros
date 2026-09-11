@@ -24,6 +24,22 @@ services over VISCA.
 
 
 
+## Repo layout
+
+This repo's root is the **outer** colcon workspace. `ffmpeg_image_transport_msgs`,
+`ffmpeg_encoder_decoder` and `ffmpeg_image_transport` (upstream:
+[ros-misc-utilities](https://github.com/ros-misc-utilities)) are third-party
+dependencies, included as **git submodules** rather than vendored, so they stay
+attributed to their own authors and pinned to a known-good commit. The actual
+driver — `fcb_camera` and `fcb_interfaces` — lives one level down, in
+`fcb-ros/`, the **inner** workspace.
+
+```bash
+git clone --recursive https://github.com/<you>/fcb_ros.git ~/fcb-ros
+# already cloned without --recursive?
+cd ~/fcb-ros && git submodule update --init --recursive
+```
+
 ## Installation
 
 Dependencies (Ubuntu 22.04 / ROS 2 Humble):
@@ -38,22 +54,29 @@ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
 
 If the `ros-humble-ffmpeg-*` packages cannot be installed (as on the
-development laptop, which has no sudo), clone them next to the driver and
-build them from source; that is what the checkouts of
-`ffmpeg_image_transport_msgs`, `ffmpeg_encoder_decoder` and
-`ffmpeg_image_transport` in the workspace root are for.
+development laptop, which has no sudo), build the submodules from source
+instead — that is what the `ffmpeg_image_transport_msgs`, `ffmpeg_encoder_decoder`
+and `ffmpeg_image_transport` checkouts in the workspace root are for.
 
-Build:
+Build (**not** with `sudo` — it strips the ROS environment and leaves
+root-owned files behind):
 
 ```bash
 cd ~/fcb-ros                                  # workspace root
 source /opt/ros/humble/setup.bash
 # only needed when building the ffmpeg transport from source:
 colcon build --packages-select ffmpeg_image_transport_msgs ffmpeg_encoder_decoder \
-             ffmpeg_image_transport --cmake-args -DBUILD_TESTING=OFF
-colcon build --packages-select fcb_interfaces fcb_camera
+             ffmpeg_image_transport --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3 -DBUILD_TESTING=OFF
+source install/setup.bash
+cd fcb-ros                                    # inner workspace: the driver itself
+colcon build --packages-select fcb_interfaces fcb_camera \
+             --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3 -DBUILD_TESTING=OFF
 source install/setup.bash
 ```
+
+`-DPython3_EXECUTABLE=/usr/bin/python3` avoids CMake caching a stale venv
+Python path, which otherwise fails partway through with
+`ModuleNotFoundError: No module named 'em'`.
 
 CMake prints `GStreamer dev packages not found; building without the
 GStreamer backend` when the Jetson backend is skipped. Everything else still
@@ -236,14 +259,12 @@ sudo usermod -aG video,dialout,plugdev $USER      # log out and in again
 ```
 
 If `ros-humble-ffmpeg-image-transport` is not available for arm64 on your
-mirror, clone the three repos into the workspace and build them from source
-(same commands as below; that is what this workspace does):
+mirror, build the submodules from source instead (same commands as below;
+that is what this workspace does). Make sure they're checked out:
 
 ```bash
 cd ~/fcb-ros
-git clone https://github.com/ros-misc-utilities/ffmpeg_image_transport_msgs.git
-git clone https://github.com/ros-misc-utilities/ffmpeg_encoder_decoder.git
-git clone https://github.com/ros-misc-utilities/ffmpeg_image_transport.git
+git submodule update --init --recursive
 ```
 
 ### 2. Build
@@ -254,8 +275,11 @@ cd ~/fcb-ros
 source /opt/ros/humble/setup.bash
 rosdep install --from-paths fcb-ros --ignore-src -r -y
 colcon build --packages-select ffmpeg_image_transport_msgs ffmpeg_encoder_decoder ffmpeg_image_transport \
-             --cmake-args -DBUILD_TESTING=OFF        # only when built from source
-colcon build --packages-select fcb_interfaces fcb_camera --cmake-args -DCMAKE_BUILD_TYPE=Release
+             --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3 -DBUILD_TESTING=OFF   # only when built from source
+source install/setup.bash
+cd fcb-ros
+colcon build --packages-select fcb_interfaces fcb_camera \
+             --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3 -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
 ```
 
@@ -272,7 +296,9 @@ ros2 run fcb_camera fcb_udev_setup.sh      # camera plugged in; installs /etc/ud
 ### 4. Run
 
 ```bash
-source ~/fcb-ros/install/setup.bash
+source /opt/ros/humble/setup.bash
+source ~/fcb-ros/install/setup.bash            # outer workspace: the 3 submodules
+source ~/fcb-ros/fcb-ros/install/setup.bash    # inner workspace: fcb_camera / fcb_interfaces
 ros2 launch fcb_camera fcb_camera.launch.py                 # auto: nvv4l2h265enc via GStreamer, 8 Mbit/s
 ros2 launch fcb_camera fcb_camera.launch.py backend:=gstreamer codec:=h264   # H.264 hardware encoder
 ros2 run fcb_camera fcb_record.sh flight1                    # record

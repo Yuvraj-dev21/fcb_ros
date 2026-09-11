@@ -5,12 +5,6 @@ build/
 install/
 log/
 
-# third-party dependencies cloned next to the driver (see README) --
-# fetch your own copy, don't vendor them into this repo
-/ffmpeg_encoder_decoder/
-/ffmpeg_image_transport/
-/ffmpeg_image_transport_msgs/
-
 # editor / OS noise
 *.swp
 *.swo
